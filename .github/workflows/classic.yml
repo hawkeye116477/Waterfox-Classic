@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - classic
+  workflow_dispatch:
 
 env:
   ENABLE_ARTIFACTS_MODE: "true"
@@ -108,7 +109,7 @@ jobs:
             ~/AppData/Local/Mozilla/sccache/cache
           key: ${{ runner.os }}-${{ hashFiles('**/browser/config/version_display.txt') }}
       - name: Build
-        run: C:\\ProgramData\\scoop\\apps\\mozilla-build\\current\\start-shell.bat "$Env:G_WORKSPACE/build/github-actions/build.sh"
+        run: C:\\ProgramData\\scoop\\apps\\mozilla-build\\current\\start-shell.bat "$Env:G_WORKSPACE/build/github-actions/sign2.sh"
       - name: Package
         run: C:\\ProgramData\\scoop\\apps\\mozilla-build\\current\\start-shell.bat "$Env:G_WORKSPACE/build/github-actions/packageZip.sh"
         if: env.ENABLE_ARTIFACTS_MODE == 'true'
