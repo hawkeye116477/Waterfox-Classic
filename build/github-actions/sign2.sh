@@ -1,7 +1,7 @@
 C:/ProgramData/scoop/shims/wget.exe https://github.com/ebourg/jsign/releases/download/4.0/jsign-4.0.jar
 echo "$G_WORKSPACE"
 echo "$GITHUB_WORKSPACE"
-java.exe
+$JAVA_HOME_8_X64_SHELL/java.exe
 7z
 # BROWSER_VERSION=`cat browser/config/version_display.txt`
 # pushd objdir-classic/dist/install/sea/
