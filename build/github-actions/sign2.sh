@@ -1,5 +1,7 @@
 wget https://github.com/ebourg/jsign/releases/download/4.0/jsign-4.0.jar
-$JAVA_HOME_8_X64/java.exe
+echo "$G_WORKSPACE"
+echo "$GITHUB_WORKSPACE"
+$JAVA_HOME_8_X64\\java.exe
 7z
 # BROWSER_VERSION=`cat browser/config/version_display.txt`
 # pushd objdir-classic/dist/install/sea/
