@@ -20,7 +20,9 @@ static PRBool failed = PR_FALSE;
 
 static void Failed(const char *msg1, const char *msg2)
 {
-    if (NULL != msg1) PR_fprintf(err, "%s ", msg1);
+    if (NULL != msg1) {
+        PR_fprintf(err, "%s ", msg1);
+    }
     PL_FPrintError(err, msg2);
     failed = PR_TRUE;
 }  /* Failed */
@@ -59,14 +61,19 @@ int main(int argc, char **argv)
         "PR_SockOpt_MaxSegment",      /* maximum segment size */
         "PR_SockOpt_Broadcast",       /* Enable broadcast */
         "PR_SockOpt_Reuseport",       /* allow local address & port reuse */
+        "PR_SockOpt_DontFrag",        /* do not fragment */
         "PR_SockOpt_Last"
     };
 
     err = PR_GetSpecialFD(PR_StandardError);
     PR_STDIO_INIT();
 
-    if (NULL == udp) Failed("PR_NewUDPSocket()", NULL);
-    else if (NULL == tcp) Failed("PR_NewTCPSocket()", NULL);
+    if (NULL == udp) {
+        Failed("PR_NewUDPSocket()", NULL);
+    }
+    else if (NULL == tcp) {
+        Failed("PR_NewTCPSocket()", NULL);
+    }
     else
     {
         PRSockOption option;
@@ -74,9 +81,13 @@ int main(int argc, char **argv)
         PRNetAddr addr;
 
         rv = PR_InitializeNetAddr(PR_IpAddrAny, 0, &addr);
-        if (PR_FAILURE == rv) Failed("PR_InitializeNetAddr()", NULL);
+        if (PR_FAILURE == rv) {
+            Failed("PR_InitializeNetAddr()", NULL);
+        }
         rv = PR_Bind(udp, &addr);
-        if (PR_FAILURE == rv) Failed("PR_Bind()", NULL);
+        if (PR_FAILURE == rv) {
+            Failed("PR_Bind()", NULL);
+        }
         for(option = PR_SockOpt_Linger; option < PR_SockOpt_Last; Incr(&option))
         {
             PRSocketOptionData data;
@@ -86,79 +97,80 @@ int main(int argc, char **argv)
             {
                 case PR_SockOpt_Nonblocking:
                     data.value.non_blocking = PR_TRUE;
-                    break;    
-#ifndef SYMBIAN
+                    break;
                 case PR_SockOpt_Linger:
                     data.value.linger.polarity = PR_TRUE;
-                    data.value.linger.linger = PR_SecondsToInterval(2);          
-                    break;    
-#endif
+                    data.value.linger.linger = PR_SecondsToInterval(2);
+                    break;
                 case PR_SockOpt_Reuseaddr:
-                    data.value.reuse_addr = PR_TRUE;      
-                    break;    
-                case PR_SockOpt_Keepalive:       
-                    data.value.keep_alive = PR_TRUE;      
-                    break;    
+                    data.value.reuse_addr = PR_TRUE;
+                    break;
+                case PR_SockOpt_Keepalive:
+                    data.value.keep_alive = PR_TRUE;
+                    break;
                 case PR_SockOpt_RecvBufferSize:
-                    data.value.recv_buffer_size = segment;  
-                    break;    
-                case PR_SockOpt_SendBufferSize:  
-                    data.value.send_buffer_size = segment;  
-                    break;    
-#ifndef SYMBIAN
+                    data.value.recv_buffer_size = segment;
+                    break;
+                case PR_SockOpt_SendBufferSize:
+                    data.value.send_buffer_size = segment;
+                    break;
                 case PR_SockOpt_IpTimeToLive:
-                    data.value.ip_ttl = 64;  
-                    break;    
+                    data.value.ip_ttl = 64;
+                    break;
                 case PR_SockOpt_IpTypeOfService:
-                    data.value.tos = 0; 
-                    break;    
+                    data.value.tos = 0;
+                    break;
                 case PR_SockOpt_McastTimeToLive:
-                    fd = udp; 
-                    data.value.mcast_ttl = 4; 
-                    break;    
+                    fd = udp;
+                    data.value.mcast_ttl = 4;
+                    break;
                 case PR_SockOpt_McastLoopback:
-                    fd = udp; 
-                    data.value.mcast_loopback = PR_TRUE; 
-                    break;    
-#endif
+                    fd = udp;
+                    data.value.mcast_loopback = PR_TRUE;
+                    break;
                 case PR_SockOpt_NoDelay:
-                    data.value.no_delay = PR_TRUE;         
-                    break;    
+                    data.value.no_delay = PR_TRUE;
+                    break;
 #ifndef WIN32
                 case PR_SockOpt_MaxSegment:
-                    data.value.max_segment = segment;      
-                    break;    
+                    data.value.max_segment = segment;
+                    break;
 #endif
-#ifndef SYMBIAN
                 case PR_SockOpt_Broadcast:
-                    fd = udp; 
-                    data.value.broadcast = PR_TRUE;         
-                    break;    
-#endif
+                    fd = udp;
+                    data.value.broadcast = PR_TRUE;
+                    break;
 #ifdef SO_REUSEPORT
                 case PR_SockOpt_Reuseport:
                     data.value.reuse_port = PR_TRUE;
                     break;
 #endif
+                case PR_SockOpt_DontFrag:
+                    data.value.dont_fragment = PR_TRUE;
+                    break;
+
                 default: continue;
             }
 
-			/*
-			 * TCP_MAXSEG can only be read, not set
-			 */
+            /*
+             * TCP_MAXSEG can only be read, not set
+             */
             if (option != PR_SockOpt_MaxSegment) {
 #ifdef WIN32
-            	if (option != PR_SockOpt_McastLoopback)
+                if (option != PR_SockOpt_McastLoopback)
 #endif
-				{
-            		rv = PR_SetSocketOption(fd, &data);
-            		if (PR_FAILURE == rv)
-							Failed("PR_SetSocketOption()", tag[option]);
-				}
-			}
+                {
+                    rv = PR_SetSocketOption(fd, &data);
+                    if (PR_FAILURE == rv) {
+                        Failed("PR_SetSocketOption()", tag[option]);
+                    }
+                }
+            }
 
             rv = PR_GetSocketOption(fd, &data);
-            if (PR_FAILURE == rv) Failed("PR_GetSocketOption()", tag[option]);
+            if (PR_FAILURE == rv) {
+                Failed("PR_GetSocketOption()", tag[option]);
+            }
         }
         PR_Close(udp);
         PR_Close(tcp);

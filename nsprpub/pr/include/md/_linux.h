@@ -17,7 +17,7 @@
  * Internal configuration macros
  */
 
-#define PR_LINKER_ARCH	"linux"
+#define PR_LINKER_ARCH  "linux"
 #define _PR_SI_SYSNAME  "LINUX"
 #ifdef __powerpc64__
 #define _PR_SI_ARCHITECTURE "ppc64"
@@ -61,21 +61,35 @@
 #define _PR_SI_ARCHITECTURE "riscv32"
 #elif defined(__riscv) && (__riscv_xlen == 64)
 #define _PR_SI_ARCHITECTURE "riscv64"
+#elif defined(__e2k__)
+#define _PR_SI_ARCHITECTURE "e2k"
+#elif defined(__arc__)
+#define _PR_SI_ARCHITECTURE "arc"
+#elif defined(__nios2__)
+#define _PR_SI_ARCHITECTURE "nios2"
+#elif defined(__microblaze__)
+#define _PR_SI_ARCHITECTURE "microblaze"
+#elif defined(__nds32__)
+#define _PR_SI_ARCHITECTURE "nds32"
+#elif defined(__xtensa__)
+#define _PR_SI_ARCHITECTURE "xtensa"
+#elif defined(__loongarch64)
+#define _PR_SI_ARCHITECTURE "loongarch64"
 #else
 #error "Unknown CPU architecture"
 #endif
-#define PR_DLL_SUFFIX		".so"
+#define PR_DLL_SUFFIX       ".so"
 
 #define _PR_VMBASE              0x30000000
-#define _PR_STACK_VMBASE	0x50000000
-#define _MD_DEFAULT_STACK_SIZE	65536L
+#define _PR_STACK_VMBASE    0x50000000
+#define _MD_DEFAULT_STACK_SIZE  65536L
 #define _MD_MMAP_FLAGS          MAP_PRIVATE
 
 #if defined(__aarch64__) || defined(__mips__)
 #define _MD_MINIMUM_STACK_SIZE  0x20000
 #endif
 
-#undef	HAVE_STACK_GROWING_UP
+#undef  HAVE_STACK_GROWING_UP
 
 /*
  * Elf linux supports dl* functions
@@ -127,6 +141,18 @@ extern PRInt32 _PR_x86_64_AtomicAdd(PRInt32 *ptr, PRInt32 val);
 #define _MD_ATOMIC_ADD                _PR_x86_64_AtomicAdd
 extern PRInt32 _PR_x86_64_AtomicSet(PRInt32 *val, PRInt32 newval);
 #define _MD_ATOMIC_SET                _PR_x86_64_AtomicSet
+#endif
+
+#if defined(__loongarch__)
+#if defined(__GNUC__)
+/* Use GCC built-in functions */
+#define _PR_HAVE_ATOMIC_OPS
+#define _MD_INIT_ATOMIC()
+#define _MD_ATOMIC_INCREMENT(ptr) __sync_add_and_fetch(ptr, 1)
+#define _MD_ATOMIC_DECREMENT(ptr) __sync_sub_and_fetch(ptr, 1)
+#define _MD_ATOMIC_ADD(ptr, i) __sync_add_and_fetch(ptr, i)
+#define _MD_ATOMIC_SET(ptr, nv) __sync_lock_test_and_set(ptr, nv)
+#endif
 #endif
 
 #if defined(__or1k__)
@@ -329,7 +355,7 @@ extern void _MD_CleanupBeforeExit(void);
 
 #include <setjmp.h>
 
-#define PR_CONTEXT_TYPE	sigjmp_buf
+#define PR_CONTEXT_TYPE sigjmp_buf
 
 #define CONTEXT(_th) ((_th)->md.context)
 
@@ -554,8 +580,8 @@ extern void _MD_CleanupBeforeExit(void);
 
 #define _MD_SWITCH_CONTEXT(_thread)  \
     if (!sigsetjmp(CONTEXT(_thread), 1)) {  \
-	(_thread)->md.errcode = errno;  \
-	_PR_Schedule();  \
+    (_thread)->md.errcode = errno;  \
+    _PR_Schedule();  \
     }
 
 /*
@@ -616,24 +642,24 @@ struct _MDCPU_Unix {
 #else
     struct pollfd *ioq_pollfds;
     int ioq_pollfds_size;
-#endif	/* _PR_USE_POLL */
+#endif  /* _PR_USE_POLL */
 };
 
-#define _PR_IOQ(_cpu)			((_cpu)->md.md_unix.ioQ)
+#define _PR_IOQ(_cpu)           ((_cpu)->md.md_unix.ioQ)
 #define _PR_ADD_TO_IOQ(_pq, _cpu) PR_APPEND_LINK(&_pq.links, &_PR_IOQ(_cpu))
-#define _PR_FD_READ_SET(_cpu)		((_cpu)->md.md_unix.fd_read_set)
-#define _PR_FD_READ_CNT(_cpu)		((_cpu)->md.md_unix.fd_read_cnt)
-#define _PR_FD_WRITE_SET(_cpu)		((_cpu)->md.md_unix.fd_write_set)
-#define _PR_FD_WRITE_CNT(_cpu)		((_cpu)->md.md_unix.fd_write_cnt)
-#define _PR_FD_EXCEPTION_SET(_cpu)	((_cpu)->md.md_unix.fd_exception_set)
-#define _PR_FD_EXCEPTION_CNT(_cpu)	((_cpu)->md.md_unix.fd_exception_cnt)
-#define _PR_IOQ_TIMEOUT(_cpu)		((_cpu)->md.md_unix.ioq_timeout)
-#define _PR_IOQ_MAX_OSFD(_cpu)		((_cpu)->md.md_unix.ioq_max_osfd)
-#define _PR_IOQ_OSFD_CNT(_cpu)		((_cpu)->md.md_unix.ioq_osfd_cnt)
-#define _PR_IOQ_POLLFDS(_cpu)		((_cpu)->md.md_unix.ioq_pollfds)
-#define _PR_IOQ_POLLFDS_SIZE(_cpu)	((_cpu)->md.md_unix.ioq_pollfds_size)
+#define _PR_FD_READ_SET(_cpu)       ((_cpu)->md.md_unix.fd_read_set)
+#define _PR_FD_READ_CNT(_cpu)       ((_cpu)->md.md_unix.fd_read_cnt)
+#define _PR_FD_WRITE_SET(_cpu)      ((_cpu)->md.md_unix.fd_write_set)
+#define _PR_FD_WRITE_CNT(_cpu)      ((_cpu)->md.md_unix.fd_write_cnt)
+#define _PR_FD_EXCEPTION_SET(_cpu)  ((_cpu)->md.md_unix.fd_exception_set)
+#define _PR_FD_EXCEPTION_CNT(_cpu)  ((_cpu)->md.md_unix.fd_exception_cnt)
+#define _PR_IOQ_TIMEOUT(_cpu)       ((_cpu)->md.md_unix.ioq_timeout)
+#define _PR_IOQ_MAX_OSFD(_cpu)      ((_cpu)->md.md_unix.ioq_max_osfd)
+#define _PR_IOQ_OSFD_CNT(_cpu)      ((_cpu)->md.md_unix.ioq_osfd_cnt)
+#define _PR_IOQ_POLLFDS(_cpu)       ((_cpu)->md.md_unix.ioq_pollfds)
+#define _PR_IOQ_POLLFDS_SIZE(_cpu)  ((_cpu)->md.md_unix.ioq_pollfds_size)
 
-#define _PR_IOQ_MIN_POLLFDS_SIZE(_cpu)	32
+#define _PR_IOQ_MIN_POLLFDS_SIZE(_cpu)  32
 
 struct _MDCPU {
     struct _MDCPU_Unix md_unix;
@@ -686,7 +712,7 @@ extern void _MD_EarlyInit(void);
 #ifdef _PR_POLL_AVAILABLE
 #include <sys/poll.h>
 extern int __syscall_poll(struct pollfd *ufds, unsigned long int nfds,
-	int timeout);
+                          int timeout);
 #define _MD_POLL __syscall_poll
 #endif
 
