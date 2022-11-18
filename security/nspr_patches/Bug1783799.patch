@@ -1,0 +1,49 @@
+From 468e03d4d7983d88a2a96b88676565f1aaadd83d Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh+mozilla@glandium.org>
+Date: Tue, 30 Aug 2022 09:38:40 +0000
+Subject: [PATCH] Bug 1783799 - Cast osfd to a HANDLE before passing it to
+ GetOverlappedResult.
+
+---
+ nsprpub/pr/src/io/prsocket.c        | 4 ++--
+ nsprpub/pr/src/md/windows/w95sock.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/nsprpub/pr/src/io/prsocket.c b/nsprpub/pr/src/io/prsocket.c
+index 26f7a245d2dc..670ed7638c15 100644
+--- a/nsprpub/pr/src/io/prsocket.c
++++ b/nsprpub/pr/src/io/prsocket.c
+@@ -307,7 +307,7 @@ static PRStatus PR_CALLBACK SocketConnectContinue(
+ #if defined(_WIN64)
+             if (fd->secret->overlappedActive) {
+                 PRInt32 rvSent;
+-                if (GetOverlappedResult(osfd, &fd->secret->ol, &rvSent, FALSE) == FALSE) {
++                if (GetOverlappedResult((HANDLE)osfd, &fd->secret->ol, &rvSent, FALSE) == FALSE) {
+                     err = WSAGetLastError();
+                     PR_LOG(_pr_io_lm, PR_LOG_MIN,
+                            ("SocketConnectContinue GetOverlappedResult failed %d\n", err));
+@@ -339,7 +339,7 @@ static PRStatus PR_CALLBACK SocketConnectContinue(
+     if (fd->secret->overlappedActive) {
+         PR_ASSERT(fd->secret->nonblocking);
+         PRInt32 rvSent;
+-        if (GetOverlappedResult(osfd, &fd->secret->ol, &rvSent, FALSE) == TRUE) {
++        if (GetOverlappedResult((HANDLE)osfd, &fd->secret->ol, &rvSent, FALSE) == TRUE) {
+             fd->secret->overlappedActive = PR_FALSE;
+             PR_LOG(_pr_io_lm, PR_LOG_MIN,
+                ("SocketConnectContinue GetOverlappedResult succeeded\n"));
+diff --git a/nsprpub/pr/src/md/windows/w95sock.c b/nsprpub/pr/src/md/windows/w95sock.c
+index c6a3ec111fb9..77607b30b024 100644
+--- a/nsprpub/pr/src/md/windows/w95sock.c
++++ b/nsprpub/pr/src/md/windows/w95sock.c
+@@ -486,7 +486,7 @@ _PR_MD_TCPSENDTO(PRFileDesc *fd, const void *buf, PRInt32 amount, PRIntn flags,
+             if ( rv < 0 ) {
+                 return -1;
+             }
+-            rv = GetOverlappedResult(osfd, &fd->secret->ol, &rvSent, FALSE);
++            rv = GetOverlappedResult((HANDLE)osfd, &fd->secret->ol, &rvSent, FALSE);
+             if ( rv == TRUE ) {
+                 return rvSent;
+             } else {
+-- 
+2.38.1
+

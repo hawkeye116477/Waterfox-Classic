@@ -24,3 +24,6 @@ sed -i 's/NSPR_MINVER.*/NSPR_MINVER='$1'/g' "$SCRIPT_PATH"/../old-configure.in
 # Cleanup
 rm -rf "$nspr_dir"/.hg/
 find "$nspr_dir" -type f -name ".*" -delete
+
+# Patch
+patch -Np1 -i ./security/nspr_patches/Bug1783799.patch
